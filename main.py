@@ -58,14 +58,62 @@ def masked_url(unique_id):
 
     # Validate the session time (expire after 10 minutes)
     session_duration = time.time() - session_data['timestamp']
-    if session_duration > 600:  # Expire after 10 minutes (adjust as needed)
+    if session_duration > 600:  # Expire after 10 minutes
         del dynamic_urls[unique_id]  # Remove expired session
         return redirect(url_for('access_denied'))
 
-    # Return the access key for the user
-    return jsonify({
-        "message": f"Payment successful! Your access key is: {session_data['key']}. Please use it within this session."
-    }), 200
+    # Render a custom HTML page to display the access key and allow copy functionality
+    access_key = session_data['key']
+    return f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Payment Success</title>
+        <style>
+            body {{
+                font-family: Arial, sans-serif;
+                text-align: center;
+                margin: 50px;
+            }}
+            .key-box {{
+                display: inline-block;
+                padding: 15px;
+                border: 1px solid #ddd;
+                background-color: #f9f9f9;
+                font-size: 18px;
+                margin: 20px 0;
+                cursor: pointer;
+            }}
+            .message {{
+                font-size: 16px;
+                margin-bottom: 10px;
+            }}
+        </style>
+    </head>
+    <body>
+        <h1>Payment Successful!</h1>
+        <p class="message">Click below to copy your access key:</p>
+        <div class="key-box" id="accessKey" onclick="copyKey()">{access_key}-click here now</div>
+        <p id="status" style="color: green;"></p>
+        <script>
+            function copyKey() {{
+                const keyBox = document.getElementById('accessKey');
+                navigator.clipboard.writeText(keyBox.textContent).then(() => {{
+                    document.getElementById('status').textContent = 'Key copied! Redirecting...';
+                    setTimeout(() => {{
+                        window.location.href = 'https://mockello-hr-round2.vercel.app/'; // Replace with your target URL
+                    }}, 1500);
+                }}).catch(err => {{
+                    document.getElementById('status').textContent = 'Failed to copy the key!';
+                    console.error('Failed to copy text: ', err);
+                }});
+            }}
+        </script>
+    </body>
+    </html>
+    """
 
 # Route for users to enter the key on the main website
 @app.route('/validate-key', methods=['POST'])
@@ -100,7 +148,6 @@ def access_denied():
 def ping():
     return jsonify({"status": "Server is up and running!"}), 200
 
-
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 4000))  # Use PORT environment variable if set, otherwise default to 5000
-    app.run(host='0.0.0.0', port=port, debug=True, threaded=True)
+port = int(os.environ.get('PORT', 4000)) # Use PORT environment variable if set, otherwise default to 5000
+app.run(host='0.0.0.0', port=port, debug=True, threaded=True)
