@@ -94,8 +94,8 @@ def masked_url(unique_id):
     </head>
     <body>
         <h1>Payment Successful!</h1>
-        <p class="message">Click below to copy your access key:</p>
-        <div class="key-box" id="accessKey" onclick="copyKey()">{access_key}-click here now</div>
+        <p class="message">Click below box to copy your access key:</p>
+        <div class="key-box" id="accessKey" onclick="copyKey()">{access_key}</div>
         <p id="status" style="color: green;"></p>
         <script>
             function copyKey() {{
